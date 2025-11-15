@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>郵便番号で住所検索＆地図表示</title>
+  <link rel="stylesheet" href="https://unpkg.com/modern-css-reset/dist/reset.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="container">
+    <h1>郵便番号で住所検索＆地図表示</h1>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <form id="searchForm">
+        <label for="zipcode">郵便番号（7桁、ハイフン可）</label>
+        <div class="row">
+          <input id="zipcode" name="zipcode" inputmode="numeric" autocomplete="postal-code" placeholder="1000001 または 100-0001" />
+          <button type="submit" id="searchBtn">検索</button>
+        </div>
+        <p class="help">例: 100-0001（東京都千代田区千代田）</p>
+      </form>
+
+      <div id="status" aria-live="polite"></div>
+
+      <div id="result" class="result hidden">
+        <h2>検索結果</h2>
+        <dl>
+          <div class="dl-row"><dt>都道府県</dt><dd id="pref"></dd></div>
+          <div class="dl-row"><dt>市区町村</dt><dd id="city"></dd></div>
+          <div class="dl-row"><dt>町域</dt><dd id="town"></dd></div>
+          <div class="dl-row"><dt>住所（結合）</dt><dd id="fullAddress"></dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>地図</h2>
+      <div id="map" class="map"></div>
+    </section>
+  </main>
+
+  <footer class="container foot">
+    <small>
+      住所データ: <a href="https://zipcloud.ibsnet.co.jp/" target="_blank" rel="noreferrer">zipcloud</a> /
+      地図: <a href="https://www.openstreetmap.org/" target="_blank" rel="noreferrer">OpenStreetMap</a> & <a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Leaflet</a>
+    </small>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="./app.js"></script>
+</body>
+</html>
