@@ -1,163 +1,92 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>郵便番号↔住所 検索マップ（安定版）</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <style>
-    body {
-      font-family: "Noto Sans JP", sans-serif;
-      background-color: #faf8f3;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    h1 {
-      background-color: #4c8a65;
-      color: white;
-      width: 100%;
-      text-align: center;
-      padding: 1em 0;
-      margin: 0;
-    }
-    form, select {
-      font-size: 1em;
-    }
-    .container {
-      max-width: 600px;
-      background: #fff;
-      padding: 1em;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      margin-top: 1.5em;
-    }
-    label, input, button {
-      display: block;
-      margin-bottom: .5em;
-    }
-    input, button, select {
-      width: 100%;
-      padding: .6em;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background: #4c8a65;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #3a6b4f;
-    }
-    #map {
-      width: 90%;
-      height: 400px;
-      border-radius: 10px;
-      margin-top: 1em;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>郵便番号で住所検索＆地図表示</title>
+  <link rel="stylesheet" href="https://unpkg.com/modern-css-reset/dist/reset.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <h1>郵便番号 ↔ 住所 検索マップ</h1>
+  <header class="container">
+    <h1>郵便番号で住所検索＆地図表示</h1>
+  </header>
 
-  <div class="container">
-    <form id="addressForm">
-      <label>住所を入力（例：大阪市北区梅田）</label>
-      <input type="text" id="addressInput" placeholder="例：東京都千代田区丸の内">
-      <button type="submit">検索</button>
-    </form>
+  <main class="container">
+    <div class="tabs">
+      <button class="tab-button active" data-tab="zipcode">郵便番号から住所検索</button>
+      <button class="tab-button" data-tab="address">住所から郵便番号検索</button>
+    </div>
 
-    <select id="addressSelect" style="display:none;"></select>
+    <div class="tab-content active" id="zipcode-tab">
+      <section class="card">
+        <h2>郵便番号から住所検索</h2>
+        <form id="searchForm">
+          <label for="zipcode">郵便番号（7桁、ハイフン可）</label>
+          <div class="row">
+            <input id="zipcode" name="zipcode" inputmode="numeric" autocomplete="postal-code" placeholder="1000001 または 100-0001" />
+            <button type="submit" id="searchBtn">検索</button>
+          </div>
+          <p class="help">例: 100-0001（東京都千代田区千代田）</p>
+        </form>
 
-    <p>郵便番号：<span id="zipcodeResult"></span></p>
-  </div>
+        <div id="status" aria-live="polite"></div>
+        <div id="result" class="result hidden">
+          <h2>検索結果</h2>
+          <dl>
+            <div class="dl-row"><dt>都道府県</dt><dd id="pref"></dd></div>
+            <div class="dl-row"><dt>市区町村</dt><dd id="city"></dd></div>
+            <div class="dl-row"><dt>町域</dt><dd id="town"></dd></div>
+            <div class="dl-row"><dt>住所（結合）</dt><dd id="fullAddress"></dd></div>
+            <div class="dl-row"><dt>郵便番号</dt><dd id="zipcodeResult"></dd></div>
+          </dl>
+        </div>
+      </section>
+    </div>
 
-  <div id="map"></div>
+    <div class="tab-content" id="address-tab">
+      <section class="card">
+        <h2>住所から郵便番号検索</h2>
+        <form id="addressForm">
+          <label for="addressInput">住所（都道府県から入力）</label>
+          <div class="row">
+            <div class="address-input-container">
+              <input id="addressInput" name="addressInput" placeholder="例: 東京都千代田区千代田" autocomplete="off" />
+              <div id="addressSuggestions" class="suggestions hidden"></div>
+            </div>
+          </div>
+          <p class="help">例: 東京都千代田区千代田</p>
+        </form>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    const map = L.map("map").setView([35.681236, 139.767125], 10);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors",
-    }).addTo(map);
-    let marker;
+        <div id="addressStatus" aria-live="polite"></div>
+        <div id="addressResult" class="result hidden">
+          <h2>検索結果</h2>
+          <dl>
+            <div class="dl-row"><dt>郵便番号</dt><dd id="zipcodeFromAddress"></dd></div>
+            <div class="dl-row"><dt>都道府県</dt><dd id="prefFromAddress"></dd></div>
+            <div class="dl-row"><dt>市区町村</dt><dd id="cityFromAddress"></dd></div>
+            <div class="dl-row"><dt>町域</dt><dd id="townFromAddress"></dd></div>
+            <div class="dl-row"><dt>住所（結合）</dt><dd id="fullAddressFromAddress"></dd></div>
+          </dl>
+        </div>
+      </section>
+    </div>
 
-    function updateMap(lat, lon, label) {
-      if (marker) map.removeLayer(marker);
-      marker = L.marker([lat, lon]).addTo(map).bindPopup(label).openPopup();
-      map.setView([lat, lon], 14);
-    }
+    <section class="card">
+      <h2>地図</h2>
+      <div id="map" class="map"></div>
+    </section>
+  </main>
 
-    const addrForm = document.getElementById("addressForm");
-    const addrInput = document.getElementById("addressInput");
-    const addrSelect = document.getElementById("addressSelect");
-    const zipOut = document.getElementById("zipcodeResult");
+  <footer class="container foot">
+    <small>
+      住所データ: <a href="https://zipcloud.ibsnet.co.jp/" target="_blank" rel="noreferrer">zipcloud</a> /
+      地図: <a href="https://www.openstreetmap.org/" target="_blank" rel="noreferrer">OpenStreetMap</a> & <a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Leaflet</a>
+    </small>
+  </footer>
 
-    addrForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const query = addrInput.value.trim();
-      if (!query) return alert("住所を入力してください");
-      zipOut.textContent = "検索中...";
-      addrSelect.style.display = "none";
-      addrSelect.innerHTML = "";
-
-      try {
-        // HeartRails APIを呼び出し（https対応）
-        const res = await fetch(`https://geoapi.heartrails.com/api/json?method=searchByAddress&address=${encodeURIComponent(query)}`);
-        const data = await res.json();
-
-        // location配列を確認
-        let locations = data?.response?.location || [];
-
-        // 曖昧住所でヒットしない場合は "区" "市" を削って再検索
-        if (locations.length === 0 && query.includes("区")) {
-          const shorter = query.replace("区", "");
-          const res2 = await fetch(`https://geoapi.heartrails.com/api/json?method=searchByAddress&address=${encodeURIComponent(shorter)}`);
-          const data2 = await res2.json();
-          locations = data2?.response?.location || [];
-        }
-
-        if (locations.length === 0) {
-          zipOut.textContent = "該当する住所が見つかりません。";
-          return;
-        }
-
-        // 候補が1つなら即表示
-        if (locations.length === 1) {
-          const c = locations[0];
-          zipOut.textContent = c.postal;
-          updateMap(c.y, c.x, `${c.prefecture}${c.city}${c.town}（〒${c.postal}）`);
-          return;
-        }
-
-        // 複数候補 → プルダウンで選択
-        addrSelect.style.display = "block";
-        addrSelect.innerHTML = `<option value="">候補を選択 (${locations.length}件)</option>`;
-        locations.forEach((c, i) => {
-          const opt = document.createElement("option");
-          opt.value = JSON.stringify(c);
-          opt.textContent = `${c.prefecture}${c.city}${c.town}（〒${c.postal}）`;
-          addrSelect.appendChild(opt);
-        });
-        zipOut.textContent = "候補から選択してください。";
-
-      } catch (err) {
-        zipOut.textContent = "エラー: " + err.message;
-      }
-    });
-
-    addrSelect.addEventListener("change", (e) => {
-      const val = e.target.value;
-      if (!val) return;
-      const c = JSON.parse(val);
-      zipOut.textContent = c.postal;
-      updateMap(c.y, c.x, `${c.prefecture}${c.city}${c.town}（〒${c.postal}）`);
-    });
-  </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="./app.js"></script>
 </body>
 </html>

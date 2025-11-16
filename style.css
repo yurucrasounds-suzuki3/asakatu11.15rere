@@ -1,10 +1,10 @@
 :root{
-  --bg:#0b1020;
-  --card:#121931;
-  --text:#e7eaf6;
-  --muted:#a6b0cf;
-  --accent:#4f7cff;
-  --danger:#ff6b6b;
+  --primary:#3b82f6;
+  --danger:#ef4444;
+  --card:#0f172a;
+  --text:#f8fafc;
+  --muted:#94a3b8;
+  --border:#334155;
 }
 *{box-sizing:border-box}
 body{
@@ -16,6 +16,25 @@ body{
 .container{max-width:960px;margin:0 auto;padding:20px}
 h1{font-size:clamp(20px,3.2vw,28px);margin:8px 0 16px}
 h2{font-size:18px;margin:0 0 12px}
+.card + .card{margin-top:24px}
+
+/* タブスタイル */
+.tabs{display:flex;margin-bottom:24px;background:var(--card);border-radius:12px;border:1px solid #1c2445;overflow:hidden}
+.tab-button{flex:1;padding:16px 20px;background:none;border:none;color:var(--muted);cursor:pointer;transition:all 0.2s;font-size:16px;font-weight:500}
+.tab-button:hover{background:rgba(255,255,255,0.05)}
+.tab-button.active{background:var(--primary);color:#fff}
+.tab-button.active:hover{background:var(--primary)}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.address-input-container{position:relative;flex:1}
+.suggestions{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ddd;border-top:none;z-index:10;max-height:200px;overflow-y:auto}
+.suggestions.hidden{display:none}
+.suggestion-item{padding:8px 12px;cursor:pointer;border-bottom:1px solid #eee;color:#333}
+.suggestion-item:hover{background:#f5f5f5}
+.suggestion-item:last-child{border-bottom:none}
+.suggestion-item.selected{background:#e3f2fd}
 .card{
   background:var(--card);
   border:1px solid #1c2445;
@@ -24,33 +43,112 @@ h2{font-size:18px;margin:0 0 12px}
   margin:16px 0;
   box-shadow:0 10px 30px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.03);
 }
-label{display:block;margin:0 0 8px;color:var(--muted)}
-.row{display:flex;gap:8px}
-input{
-  flex:1;
-  border:1px solid #26315e;
-  background:#0f1730;
+label{
+  display:block;
+  margin-bottom:8px;
+  font-weight:500;
   color:var(--text);
-  border-radius:10px;
-  padding:12px 14px;
-  outline:none;
 }
-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,124,255,.25)}
+input,button{
+  width:100%;
+  padding:12px 16px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+  font-size:16px;
+  transition:all .2s;
+}
+input:focus,button:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(59,130,246,.1);
+}
 button{
-  background:var(--accent);
+  background:var(--primary);
   color:white;
-  border:0;
-  border-radius:10px;
-  padding:0 16px;
   font-weight:600;
   cursor:pointer;
+  border:none;
 }
-button:disabled{opacity:.6;cursor:not-allowed}
-.help{color:var(--muted);margin:8px 0 0}
-#status{min-height:22px;margin:10px 0;color:var(--muted)}
+button:hover{
+  background:#2563eb;
+  transform:translateY(-1px);
+}
+button:active{
+  transform:translateY(0);
+}
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+  transform:none;
+}
+.row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.help{
+  margin:8px 0 0;
+  font-size:14px;
+  color:var(--muted);
+}
+#status,#addressStatus{
+  margin:12px 0;
+  padding:8px 12px;
+  border-radius:6px;
+  font-size:14px;
+  font-weight:500;
+}
+#status.error,#addressStatus.error{
+  background:rgba(239,68,68,.1);
+  color:#fca5a5;
+  border:1px solid rgba(239,68,68,.2);
+}
+#status:not(.error),#addressStatus:not(.error){
+  background:rgba(34,197,94,.1);
+  color:#86efac;
+  border:1px solid rgba(34,197,94,.2);
+}
+.result{
+  margin-top:20px;
+  padding:16px;
+  background:rgba(255,255,255,.02);
+  border:1px solid var(--border);
+  border-radius:8px;
+}
 .result.hidden{display:none}
-.dl-row{display:flex;gap:12px;padding:6px 0;border-bottom:1px dashed #223;align-items:center}
-.dl-row dt{min-width:96px;color:var(--muted)}
+.result h2{
+  font-size:16px;
+  margin:0 0 12px;
+  color:var(--text);
+}
+.dl-row{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.dl-row:last-child{border-bottom:none}
+.dl-row dt{
+  font-weight:600;
+  color:var(--muted);
+  min-width:120px;
+}
+.dl-row dd{
+  margin:0;
+  text-align:right;
+  color:var(--text);
+}
 .map{height:420px;border-radius:12px;overflow:hidden;border:1px solid #1c2445}
 .foot{opacity:.8}
 .leaflet-container{background:#0a0f20}
+
+@media (max-width:768px){
+  .container{padding:12px}
+  .card{padding:12px;margin:12px 0}
+  .row{flex-direction:column;gap:12px}
+  .map{height:300px}
+  .dl-row{flex-direction:column;gap:4px;align-items:flex-start}
+  .dl-row dt{min-width:auto}
+}
